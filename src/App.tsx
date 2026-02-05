@@ -162,7 +162,7 @@ export default function App() {
           <div className="grid md:grid-cols-2 gap-16 items-center max-w-6xl mx-auto">
             <div className="reveal">
               <img
-                src="assets/perfil2.jpeg"
+                src="/assets/perfil2.jpeg"
                 alt="Campelo"
                 className="rounded-[40px] shadow-2xl grayscale hover:grayscale-0 transition duration-700"
               />
