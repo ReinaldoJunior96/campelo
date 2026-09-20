@@ -1,0 +1,27 @@
+{
+  "name": "campelo-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "API de conteúdo e painel administrativo do site do Campelo.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "senha": "node src/scripts/definirSenha.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.3.0",
+    "cookie-parser": "^1.4.7",
+    "express": "^4.21.1",
+    "express-rate-limit": "^7.4.1",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "sharp": "^0.33.5",
+    "zod": "^3.23.8"
+  }
+}

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+# TODO: trocar pelo domínio real quando ele existir.
+Sitemap: https://SEU-DOMINIO.com.br/sitemap.xml

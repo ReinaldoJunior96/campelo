@@ -1,0 +1,72 @@
+# Produção na VPS. Sobe com:
+#
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Diferente do docker-compose.yml, que é para desenvolvimento e teste local,
+# aqui existe o Caddy na frente resolvendo HTTPS, e nada além dele publica
+# porta para fora.
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    env_file:
+      - .env
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Os certificados vivem aqui. Perder este volume significa pedir tudo
+      # de novo ao Let's Encrypt, que limita quantas vezes por semana.
+      - caddy-dados:/data
+      - caddy-config:/config
+    depends_on:
+      - web
+    logging: &log
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    # Sem `ports`: só o Caddy fala com este container. Assim ninguém alcança
+    # o site por HTTP puro na porta 8080 driblando o TLS.
+    expose:
+      - "80"
+    depends_on:
+      - api
+    logging: *log
+
+  api:
+    build:
+      context: ./server
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3333
+      - DADOS_DIR=/dados
+    volumes:
+      # Banco e uploads. Único estado do sistema: é isto que precisa de backup.
+      - campelo-dados:/dados
+    expose:
+      - "3333"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3333/api/saude').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging: *log
+
+volumes:
+  campelo-dados:
+  caddy-dados:
+  caddy-config:

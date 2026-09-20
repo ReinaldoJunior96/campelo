@@ -1,0 +1,37 @@
+# Borda da VPS: termina o TLS e entrega tudo ao nginx, que serve os arquivos
+# e encaminha /api e /uploads para a API.
+#
+# O Caddy pede e renova o certificado Let's Encrypt sozinho. Para isso as
+# portas 80 e 443 precisam estar abertas e o domínio apontando para o IP da
+# máquina ANTES de subir: a validação acontece no primeiro boot.
+#
+# Testando pelo IP, sem domínio ainda? Ponha DOMINIO=:80 no .env. Aí o Caddy
+# serve HTTP puro e você PRECISA de COOKIE_SEGURO=false, senão o login falha
+# em silêncio (o navegador descarta o cookie e a tela volta pro formulário).
+
+{
+	email {$EMAIL_TLS}
+	# Descomente para emitir certificado de teste enquanto ajusta DNS. O
+	# Let's Encrypt limita cinco falhas por hora por domínio, e esbarrar
+	# nisso trava a emissão de verdade.
+	# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+{$DOMINIO} {
+	encode zstd gzip
+
+	header {
+		# O Caddy já manda HSTS sozinho quando serve HTTPS.
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+
+		# A página carrega: os próprios arquivos, fontes do Google e nada
+		# mais. Não há iframe (o embed do YouTube virou capa estática) nem
+		# script de terceiro. 'unsafe-inline' em style cobre os atributos
+		# style= inline do React, que style-src-attr exige.
+		Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+	}
+
+	reverse_proxy web:80
+}
