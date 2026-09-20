@@ -8,8 +8,10 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY package*.json ./
-RUN npm install --omit=dev
+COPY package.json package-lock.json ./
+# `npm ci` em vez de `npm install`: instala exatamente o que está no lock,
+# então o build de hoje e o de daqui a seis meses produzem a mesma imagem.
+RUN npm ci --omit=dev
 
 
 FROM node:20-bookworm-slim
