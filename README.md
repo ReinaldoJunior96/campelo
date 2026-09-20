@@ -53,17 +53,34 @@ O `.env` precisa de:
 O `make deploy` é o mesmo comando para subir a primeira vez e para atualizar
 depois. Para atualizar: `git pull && make deploy`.
 
-### Testar pelo IP, antes de ter domínio
+### VPS que já tem outro proxy na porta 80
 
-```env
-DOMINIO=:80
-COOKIE_SEGURO=false
+Se a máquina já roda outras aplicações e algo segura 80/443, o Caddy não
+tem onde entrar. Use o override que publica o site numa porta isolada e
+deixa o Caddy de fora:
+
+```bash
+PORTA_HTTP=8090 docker compose -f docker-compose.prod.yml -f docker-compose.ip.yml up -d --build
 ```
 
-O `COOKIE_SEGURO=false` é obrigatório nesse caso. A flag `secure` faz o
-cookie de sessão só viajar por HTTPS: ligada em um site HTTP puro, o
-navegador **descarta o cookie em silêncio** e o login volta para o formulário
-sem mensagem de erro nenhuma. Ao apontar o domínio, volte para `true`.
+O site fica em `http://<IP-DA-VPS>:8090` e o painel em `/admin`. No `.env`:
+
+```env
+COOKIE_SEGURO=false
+TRUST_PROXY=1
+```
+
+`COOKIE_SEGURO=false` é obrigatório aqui. A flag `secure` faz o cookie de
+sessão só viajar por HTTPS: ligada em um site HTTP puro, o navegador
+**descarta o cookie em silêncio** e o login volta para o formulário sem
+mensagem de erro nenhuma. `TRUST_PROXY=1` porque agora só o nginx do
+próprio site está na frente da API, não mais Caddy e nginx.
+
+Isto serve **HTTP puro**: a senha do painel e o cookie de sessão trafegam
+em texto claro. Serve para testar, não para deixar no ar com a senha
+definitiva. Quando o domínio existir, volte a usar só o
+`docker-compose.prod.yml` (ou ponha o site atrás do proxy que já atende os
+outros) e troque a senha.
 
 ## O painel
 

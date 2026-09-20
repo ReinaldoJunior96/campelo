@@ -1,0 +1,25 @@
+# Rodar por IP, numa porta isolada, sem domínio e sem HTTPS.
+#
+# Para quando a VPS já tem outro proxy segurando 80/443 e este site é só
+# mais uma aplicação ao lado. Usa-se junto com o arquivo de produção:
+#
+#   docker compose -f docker-compose.prod.yml -f docker-compose.ip.yml up -d
+#
+# O Caddy fica de fora (vai para um profile que ninguém ativa) e quem
+# publica porta é o nginx do próprio site.
+#
+# ATENÇÃO: isto serve HTTP puro. A senha do painel e o cookie de sessão
+# viajam em texto claro pela rede. É aceitável para testar, não para
+# deixar no ar com a senha definitiva. Quando o domínio existir, volte a
+# usar só o docker-compose.prod.yml (ou ponha este site atrás do proxy
+# que já cuida dos outros) e troque a senha.
+
+services:
+  caddy:
+    # Profile que nunca é ativado: o serviço deixa de subir sem precisar
+    # apagar nada do arquivo de produção.
+    profiles: ["nao-usar"]
+
+  web:
+    ports:
+      - "${PORTA_HTTP:-8090}:80"
