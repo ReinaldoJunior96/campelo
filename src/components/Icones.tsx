@@ -127,3 +127,66 @@ export function IconeLinkedin({ className = "h-[18px] w-[18px]", titulo }: Props
     </svg>
   );
 }
+
+export function IconeX({ className = "h-[18px] w-[18px]", titulo }: Props) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" {...base(titulo)}>
+      <rect
+        x="2.5"
+        y="2.5"
+        width="19"
+        height="19"
+        rx="5.5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M7.2 7.2l9.6 9.6M16.8 7.2l-9.6 9.6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+export function IconeFacebook({ className = "h-[18px] w-[18px]", titulo }: Props) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" {...base(titulo)}>
+      <rect
+        x="2.5"
+        y="2.5"
+        width="19"
+        height="19"
+        rx="5.5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M14 8.5h-1.6c-.6 0-1.1.5-1.1 1.1V11h2.6l-.4 2.4h-2.2V19h-2.5v-5.6H7.4V11h1.4V9.3c0-1.7 1.2-3 3-3H14v2.2Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+export function IconeCopiar({ className = "h-[18px] w-[18px]", titulo }: Props) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" {...base(titulo)}>
+      <rect
+        x="8.5"
+        y="8.5"
+        width="12"
+        height="12"
+        rx="2.2"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M15.5 8.5V6.7a2.2 2.2 0 0 0-2.2-2.2H5.7a2.2 2.2 0 0 0-2.2 2.2v7.6a2.2 2.2 0 0 0 2.2 2.2h1.8"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+    </svg>
+  );
+}

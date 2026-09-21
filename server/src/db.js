@@ -41,6 +41,25 @@ db.exec(`
     bytes         INTEGER NOT NULL,
     criado_em     TEXT NOT NULL
   );
+
+  -- Diferente de "conteudo", esta tabela é mutável (UPDATE no lugar): são
+  -- muitos posts, editados com frequência, com corpo potencialmente grande.
+  -- Duplicar a linha inteira a cada correção de digitação não compensa como
+  -- compensa para o documento único e pequeno da landing page.
+  CREATE TABLE IF NOT EXISTS post (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    slug          TEXT NOT NULL UNIQUE,
+    titulo        TEXT NOT NULL,
+    resumo        TEXT NOT NULL,
+    categoria     TEXT NOT NULL,
+    capa          TEXT NOT NULL,
+    capa_alt      TEXT NOT NULL,
+    corpo         TEXT NOT NULL,
+    status        TEXT NOT NULL CHECK (status IN ('rascunho', 'publicado')),
+    criado_em     TEXT NOT NULL,
+    atualizado_em TEXT NOT NULL,
+    publicado_em  TEXT
+  );
 `);
 
 export const agora = () => new Date().toISOString();
@@ -112,4 +131,56 @@ export const consultas = {
       .run(registro),
 
   apagarMidia: (id) => db.prepare("DELETE FROM midia WHERE id = ?").run(id),
+
+  listarPostsPublicados: () =>
+    db
+      .prepare(
+        `SELECT id, slug, titulo, resumo, capa, capa_alt, categoria, publicado_em
+         FROM post WHERE status = 'publicado' ORDER BY publicado_em DESC`,
+      )
+      .all(),
+
+  listarPostsAdmin: () =>
+    db
+      .prepare(
+        `SELECT id, slug, titulo, categoria, status, criado_em, atualizado_em, publicado_em
+         FROM post ORDER BY atualizado_em DESC`,
+      )
+      .all(),
+
+  postPorId: (id) => db.prepare("SELECT * FROM post WHERE id = ?").get(id),
+
+  postPorSlug: (slug) => db.prepare("SELECT * FROM post WHERE slug = ?").get(slug),
+
+  postPublicadoPorSlug: (slug) =>
+    db.prepare("SELECT * FROM post WHERE slug = ? AND status = 'publicado'").get(slug),
+
+  inserirPost: (registro) =>
+    db
+      .prepare(
+        `INSERT INTO post
+           (slug, titulo, resumo, categoria, capa, capa_alt, corpo, status,
+            criado_em, atualizado_em, publicado_em)
+         VALUES
+           (@slug, @titulo, @resumo, @categoria, @capa, @capaAlt, @corpo, @status,
+            @criadoEm, @atualizadoEm, @publicadoEm)`,
+      )
+      .run(registro),
+
+  atualizarPost: (id, registro) =>
+    db
+      .prepare(
+        `UPDATE post SET
+           titulo = @titulo, resumo = @resumo, categoria = @categoria, capa = @capa,
+           capa_alt = @capaAlt, corpo = @corpo, status = @status,
+           atualizado_em = @atualizadoEm, publicado_em = @publicadoEm
+         WHERE id = @id`,
+      )
+      .run({ ...registro, id }),
+
+  apagarPost: (id) => db.prepare("DELETE FROM post WHERE id = ?").run(id),
+
+  // Alimenta a checagem de mídia em uso: uma imagem referenciada só por um
+  // rascunho ainda não pode ser apagada por baixo do pano.
+  todosCorposPosts: () => db.prepare("SELECT capa, corpo FROM post").all(),
 };

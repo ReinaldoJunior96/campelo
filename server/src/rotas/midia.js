@@ -31,7 +31,21 @@ const upload = multer({
 
 const paraUrl = (arquivo) => `/uploads/${arquivo}`;
 
-function montarItem(registro, conteudoAtual) {
+/**
+ * Concatena tudo que pode referenciar uma imagem: o conteúdo publicado da
+ * landing page e a capa + corpo de todo post do blog (rascunho incluso —
+ * uma imagem usada só num rascunho não pode ser apagada por baixo do pano).
+ */
+function haystack() {
+  const conteudo = consultas.conteudoAtual()?.dados ?? "";
+  const posts = consultas
+    .todosCorposPosts()
+    .map((p) => p.capa + p.corpo)
+    .join("");
+  return conteudo + posts;
+}
+
+function montarItem(registro, haystackAtual) {
   const url = paraUrl(registro.arquivo);
 
   return {
@@ -42,14 +56,14 @@ function montarItem(registro, conteudoAtual) {
     altura: registro.altura,
     bytes: registro.bytes,
     criadoEm: registro.criado_em,
-    // Conta ocorrências no JSON publicado. Simples e suficiente: o caminho é
-    // único e só aparece em campos de imagem.
-    emUso: conteudoAtual ? conteudoAtual.split(url).length - 1 : 0,
+    // Conta ocorrências no que está publicado/salvo. Simples e suficiente: o
+    // caminho é único e só aparece em campos de imagem.
+    emUso: haystackAtual.split(url).length - 1,
   };
 }
 
 rotasMidia.get("/midia", exigirSessao, (_requisicao, resposta) => {
-  const atual = consultas.conteudoAtual()?.dados ?? null;
+  const atual = haystack();
   resposta.json({ itens: consultas.listarMidia().map((r) => montarItem(r, atual)) });
 });
 
@@ -84,11 +98,10 @@ rotasMidia.post("/midia", exigirSessao, upload.single("arquivo"), async (requisi
     };
 
     const { lastInsertRowid } = consultas.inserirMidia(registro);
-    const atual = consultas.conteudoAtual()?.dados ?? null;
 
     return resposta
       .status(201)
-      .json(montarItem(consultas.midiaPorId(Number(lastInsertRowid)), atual));
+      .json(montarItem(consultas.midiaPorId(Number(lastInsertRowid)), haystack()));
   } catch (erro) {
     // Se o sharp falhou depois de abrir o arquivo, não deixa lixo no volume.
     await fs.unlink(destino).catch(() => {});
@@ -105,11 +118,10 @@ rotasMidia.delete("/midia/:id", exigirSessao, async (requisicao, resposta) => {
     return resposta.status(404).json({ erro: "Imagem não encontrada." });
   }
 
-  const atual = consultas.conteudoAtual()?.dados ?? null;
-
-  // Apagar uma imagem que está no ar deixaria um buraco na página pública.
+  // Apagar uma imagem em uso (na landing page ou em qualquer post, mesmo
+  // rascunho) deixaria um buraco publicado ou prestes a ser publicado.
   // Melhor barrar e explicar do que quebrar o site em silêncio.
-  if (atual && atual.includes(paraUrl(registro.arquivo))) {
+  if (haystack().includes(paraUrl(registro.arquivo))) {
     return resposta.status(409).json({
       erro: "Esta imagem está em uso na página. Troque-a antes de apagar.",
     });

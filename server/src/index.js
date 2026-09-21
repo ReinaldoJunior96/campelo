@@ -4,8 +4,10 @@ import helmet from "helmet";
 import multer from "multer";
 import { config } from "./config.js";
 import { semearUsuario } from "./db.js";
+import { rotasBlogPreview } from "./rotas/blogPreview.js";
 import { rotasConteudo } from "./rotas/conteudo.js";
 import { rotasMidia } from "./rotas/midia.js";
+import { rotasPosts } from "./rotas/posts.js";
 import { rotasSessao } from "./rotas/sessao.js";
 
 const app = express();
@@ -25,9 +27,10 @@ app.use(
   }),
 );
 
-// O conteúdo inteiro do site tem poucos KB. O limite existe para que um
-// corpo gigante seja recusado na porta, antes de virar trabalho.
-app.use(express.json({ limit: "512kb" }));
+// O conteúdo da landing page tem poucos KB, mas o corpo rico de um post do
+// blog (parágrafos, imagens, embeds) passa disso fácil. O limite existe para
+// que um corpo gigante seja recusado na porta, antes de virar trabalho.
+app.use(express.json({ limit: "2mb" }));
 app.use(cookieParser());
 
 app.use(
@@ -47,6 +50,8 @@ app.get("/api/saude", (_requisicao, resposta) => resposta.json({ ok: true }));
 app.use("/api", rotasSessao);
 app.use("/api", rotasConteudo);
 app.use("/api", rotasMidia);
+app.use("/api", rotasPosts);
+app.use("/api", rotasBlogPreview);
 
 app.use((_requisicao, resposta) => {
   resposta.status(404).json({ erro: "Rota não encontrada." });

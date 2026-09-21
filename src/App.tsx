@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import BlogTeaser from "./components/BlogTeaser";
 import BotaoWhatsapp from "./components/BotaoWhatsapp";
 import Caminhos from "./components/Caminhos";
 import Chamada from "./components/Chamada";
@@ -31,6 +32,7 @@ export default function App() {
         <Caminhos />
         <ComoFunciona />
         <Conteudos />
+        <BlogTeaser />
         <Faq />
         <Chamada />
       </main>

@@ -4,6 +4,7 @@ import SeletorImagem from "./SeletorImagem";
 import { api, type Midia } from "../lib/api";
 import { conteudoPadrao } from "../conteudoPadrao";
 import type { Conteudo, TipoConteudo } from "../tipos";
+import type { PostAdmin } from "../tiposBlog";
 
 type Aba =
   | "perfil"
@@ -12,6 +13,7 @@ type Aba =
   | "caminhos"
   | "como"
   | "conteudos"
+  | "posts"
   | "faq"
   | "fechamento"
   | "imagens"
@@ -24,20 +26,40 @@ const ABAS: { id: Aba; rotulo: string }[] = [
   { id: "caminhos", rotulo: "Caminhos de cuidado" },
   { id: "como", rotulo: "Como funciona" },
   { id: "conteudos", rotulo: "Conteúdos e mídias" },
+  { id: "posts", rotulo: "Posts do blog" },
   { id: "faq", rotulo: "Perguntas frequentes" },
   { id: "fechamento", rotulo: "Chamada e rodapé" },
   { id: "imagens", rotulo: "Imagens" },
   { id: "conta", rotulo: "Conta" },
 ];
 
+const rotuloStatus: Record<PostAdmin["status"], string> = {
+  rascunho: "Rascunho",
+  publicado: "Publicado",
+};
+
+const formatarData = (iso: string) =>
+  new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", year: "numeric" }).format(
+    new Date(iso),
+  );
+
 const emKb = (bytes: number) =>
   bytes >= 1024 * 1024
     ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
     : `${Math.round(bytes / 1024)} KB`;
 
-export default function Painel({ email, aoSair }: { email: string; aoSair: () => void }) {
+export default function Painel({
+  email,
+  aoSair,
+  aoAbrirPost,
+}: {
+  email: string;
+  aoSair: () => void;
+  aoAbrirPost: (id: number | "novo") => void;
+}) {
   const [conteudo, setConteudo] = useState<Conteudo>(conteudoPadrao);
   const [midia, setMidia] = useState<Midia[]>([]);
+  const [posts, setPosts] = useState<PostAdmin[]>([]);
   const [aba, setAba] = useState<Aba>("perfil");
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
@@ -46,17 +68,29 @@ export default function Painel({ email, aoSair }: { email: string; aoSair: () =>
   const [erro, setErro] = useState("");
 
   useEffect(() => {
-    Promise.all([api.lerConteudo(), api.listarMidia()])
-      .then(([respostaConteudo, respostaMidia]) => {
+    Promise.all([api.lerConteudo(), api.listarMidia(), api.listarPostsAdmin()])
+      .then(([respostaConteudo, respostaMidia, respostaPosts]) => {
         // Sem nada salvo ainda, o painel abre com o conteúdo padrão do site,
         // que é exatamente o que está no ar. Assim a primeira edição parte do
         // que a pessoa vê, e não de formulários em branco.
         if (respostaConteudo.dados) setConteudo(respostaConteudo.dados);
         setMidia(respostaMidia.itens);
+        setPosts(respostaPosts.itens);
       })
       .catch((e) => setErro(e instanceof Error ? e.message : "Não consegui carregar."))
       .finally(() => setCarregando(false));
   }, []);
+
+  async function apagarPost(post: PostAdmin) {
+    if (!confirm(`Apagar "${post.titulo}"? Não dá para desfazer.`)) return;
+
+    try {
+      await api.apagarPost(post.id);
+      setPosts((atual) => atual.filter((p) => p.id !== post.id));
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Não consegui apagar o post.");
+    }
+  }
 
   // Avisa antes de fechar a aba com edição não salva. Vale o incômodo:
   // perder meia hora de texto por um Ctrl+W é pior.
@@ -362,6 +396,51 @@ export default function Painel({ email, aoSair }: { email: string; aoSair: () =>
                   </>
                 )}
               </ListaEditavel>
+            </Bloco>
+          )}
+
+          {aba === "posts" && (
+            <Bloco
+              titulo="Posts do blog"
+              descricao="Escreva, publique e compartilhe. Cada post é salvo por conta própria, fora do botão Salvar geral."
+            >
+              <div>
+                <Botao variante="primario" onClick={() => aoAbrirPost("novo")}>
+                  Novo post
+                </Botao>
+              </div>
+
+              {posts.length === 0 ? (
+                <p className="text-sm text-tinta/65">Nenhum post ainda.</p>
+              ) : (
+                <ul className="flex list-none flex-col gap-3 p-0">
+                  {posts.map((post) => (
+                    <li
+                      key={post.id}
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-cartao border border-tinta/15 bg-white p-4"
+                    >
+                      <div className="flex flex-col gap-1">
+                        <span className="font-bold text-tinta">{post.titulo || "sem título"}</span>
+                        <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-tinta/55">
+                          <span className={post.status === "publicado" ? "text-mare" : "text-barro"}>
+                            {rotuloStatus[post.status]}
+                          </span>
+                          {" · "}
+                          {post.categoria || "sem categoria"}
+                          {" · "}
+                          Atualizado em {formatarData(post.atualizadoEm)}
+                        </span>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <Botao onClick={() => aoAbrirPost(post.id)}>Editar</Botao>
+                        <Botao variante="perigo" onClick={() => apagarPost(post)}>
+                          Apagar
+                        </Botao>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </Bloco>
           )}
 

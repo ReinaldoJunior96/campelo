@@ -70,7 +70,9 @@ export default function Nav() {
           aria-label="Principal"
           className="mx-auto flex max-w-[1280px] items-center justify-between gap-4 px-5 py-3 md:px-16 md:py-[18px]"
         >
-          <a href="#topo" className="flex shrink-0 items-center" aria-label="Campelo, início">
+          {/* "/" e não "#topo": o Nav agora também aparece em /blog, onde essa
+              âncora não existe. */}
+          <a href="/" className="flex shrink-0 items-center" aria-label="Campelo, início">
             <img
               src="/assets/logo.png"
               alt="Campelo"

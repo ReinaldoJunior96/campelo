@@ -1,4 +1,5 @@
 import type { Conteudo } from "../tipos";
+import type { EntradaPost, Post, PostAdmin, PostResumo } from "../tiposBlog";
 
 /**
  * Cliente da API.
@@ -92,4 +93,20 @@ export const api = {
       method: "PUT",
       body: JSON.stringify({ senhaAtual, senhaNova }),
     }),
+
+  listarPosts: () => requisitar<{ itens: PostResumo[] }>("/posts"),
+
+  lerPost: (slug: string) => requisitar<Post>(`/posts/${slug}`),
+
+  listarPostsAdmin: () => requisitar<{ itens: PostAdmin[] }>("/admin/posts"),
+
+  lerPostAdmin: (id: number) => requisitar<Post>(`/admin/posts/${id}`),
+
+  criarPost: (dados: EntradaPost) =>
+    requisitar<Post>("/admin/posts", { method: "POST", body: JSON.stringify(dados) }),
+
+  atualizarPost: (id: number, dados: EntradaPost) =>
+    requisitar<Post>(`/admin/posts/${id}`, { method: "PUT", body: JSON.stringify(dados) }),
+
+  apagarPost: (id: number) => requisitar<void>(`/admin/posts/${id}`, { method: "DELETE" }),
 };

@@ -49,6 +49,7 @@ O `.env` precisa de:
 | `ADMIN_SENHA` | Mínimo 10 caracteres. Só usada na primeira subida |
 | `DOMINIO` | O domínio do site, sem `https://` |
 | `EMAIL_TLS` | Para os avisos de expiração do certificado |
+| `SITE_URL` | URL completa, com `https://` e sem barra no fim. Usada no preview de link do blog nas redes sociais |
 
 O `make deploy` é o mesmo comando para subir a primeira vez e para atualizar
 depois. Para atualizar: `git pull && make deploy`.

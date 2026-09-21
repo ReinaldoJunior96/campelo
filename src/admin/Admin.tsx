@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import EditorPost from "./EditorPost";
 import Login from "./Login";
 import Painel from "./Painel";
 import { api } from "../lib/api";
@@ -14,6 +15,7 @@ import { api } from "../lib/api";
 export default function Admin() {
   const [email, setEmail] = useState<string | null>(null);
   const [verificando, setVerificando] = useState(true);
+  const [postEmEdicao, setPostEmEdicao] = useState<number | "novo" | null>(null);
 
   useEffect(() => {
     // O painel não tem o que fazer nos resultados de busca.
@@ -47,5 +49,17 @@ export default function Admin() {
 
   if (!email) return <Login aoEntrar={setEmail} />;
 
-  return <Painel email={email} aoSair={() => setEmail(null)} />;
+  if (postEmEdicao !== null) {
+    return (
+      <div className="min-h-screen bg-areia-funda">
+        <div className="mx-auto max-w-[900px] px-5 py-8">
+          <EditorPost key={postEmEdicao} id={postEmEdicao} aoFechar={() => setPostEmEdicao(null)} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Painel email={email} aoSair={() => setEmail(null)} aoAbrirPost={setPostEmEdicao} />
+  );
 }

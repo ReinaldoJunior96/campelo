@@ -13,10 +13,10 @@ import { z } from "zod";
  * visita à página.
  */
 
-const texto = (max, min = 0) => z.string().trim().min(min).max(max);
+export const texto = (max, min = 0) => z.string().trim().min(min).max(max);
 
 /** Caminho de imagem: ou um asset do bundle, ou um upload nosso. Nada externo. */
-const caminhoImagem = z
+export const caminhoImagem = z
   .string()
   .trim()
   .max(300)
@@ -30,7 +30,7 @@ const caminhoImagem = z
  * `javascript:` e `data:` ficam de fora porque esses valores vão parar
  * direto num href renderizado na página pública.
  */
-const link = z
+export const link = z
   .string()
   .trim()
   .max(500)

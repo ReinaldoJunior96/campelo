@@ -183,9 +183,12 @@ export const conteudoPadrao: Conteudo = {
   },
 };
 
+// Âncoras levam a barra na frente (`/#sobre`, não `#sobre`) para funcionar
+// também a partir de `/blog`, não só da home.
 export const navegacao = [
-  { href: "#sobre", rotulo: "Sobre" },
-  { href: "#atuacao", rotulo: "Atuação" },
-  { href: "#como-funciona", rotulo: "Como funciona" },
-  { href: "#conteudos", rotulo: "Conteúdos" },
+  { href: "/#sobre", rotulo: "Sobre" },
+  { href: "/#atuacao", rotulo: "Atuação" },
+  { href: "/#como-funciona", rotulo: "Como funciona" },
+  { href: "/#conteudos", rotulo: "Conteúdos" },
+  { href: "/blog", rotulo: "Blog" },
 ];

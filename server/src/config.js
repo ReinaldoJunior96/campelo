@@ -67,6 +67,14 @@ export const config = {
   /** Largura máxima depois do redimensionamento. */
   imagemLarguraMax: 1600,
   imagemQualidade: 82,
+
+  /**
+   * URL absoluta do site (sem barra no fim), para montar `og:url`/`og:image`
+   * no preview de post para crawler de rede social. Errada ou ausente
+   * quebra silenciosamente todo preview de link compartilhado, por isso
+   * falha alto em produção, igual `JWT_SECRET`.
+   */
+  siteUrl: obrigatorio("SITE_URL").replace(/\/+$/, ""),
 };
 
 config.bancoArquivo = path.join(config.dadosDir, "campelo.db");
