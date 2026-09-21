@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { api } from "./api";
-import { conteudoPadrao } from "../conteudoPadrao";
+import { conteudoPadrao, mesclarPadrao } from "../conteudoPadrao";
 import type { Conteudo } from "../tipos";
 
 const Contexto = createContext<Conteudo>(conteudoPadrao);
@@ -27,7 +27,9 @@ export function ProvedorConteudo({ children }: { children: ReactNode }) {
     api
       .lerConteudo()
       .then((resposta) => {
-        if (ativo && resposta.dados) setConteudo(resposta.dados);
+        // Mescla com o padrão: uma gravação feita antes de um campo existir
+        // não tem esse campo, e sem completar a página renderiza `undefined`.
+        if (ativo && resposta.dados) setConteudo(mesclarPadrao(resposta.dados));
       })
       .catch(() => {
         // Silencioso de propósito: o visitante não tem o que fazer com um

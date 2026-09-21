@@ -47,6 +47,10 @@ const perfil = z.object({
   formacao: texto(200),
   abordagem: texto(200),
   tempoResposta: texto(40),
+  duracaoSessao: texto(60),
+  frequencia: texto(60),
+  valorSessao: texto(120),
+  onde: texto(240),
   whatsapp: z
     .string()
     .trim()

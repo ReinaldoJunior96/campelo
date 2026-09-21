@@ -1,192 +1,87 @@
 /**
- * Ícones em SVG inline, como componentes React.
+ * Ícones do Font Awesome, como componentes React.
  *
- * Substituem o script global do Lucide que era carregado por CDN e injetava
- * os SVGs uma única vez no mount. Aquilo quebrava sempre que um trecho da
- * árvore remontava (o ícone simplesmente sumia) e adicionava uma requisição
- * externa bloqueante. Como componente, o ícone acompanha o ciclo do React.
+ * A folha de estilo entra por CDN no `index.html` e o host está liberado no
+ * Content-Security-Policy do `Caddyfile`. Diferente do script do Lucide que
+ * já morou aqui, o Font Awesome é só CSS: o ícone é um caractere de webfont
+ * desenhado no `::before`, então nada precisa ser injetado no DOM e nada
+ * some quando um trecho da árvore remonta.
+ *
+ * O tamanho vem de `font-size`, não de largura e altura — por isso as
+ * classes usadas aqui e nas chamadas são `text-*` e não `h-* w-*`. A largura
+ * do glifo é fixa em 1.25em pelo próprio Font Awesome, o que mantém os
+ * ícones alinhados quando aparecem em lista.
+ *
+ * Nomes e famílias: https://fontawesome.com/search?ic=free
  */
 
-type Props = {
+type Familia = "solid" | "regular" | "brands";
+
+export type PropsIcone = {
   className?: string;
+  /**
+   * Some no leitor de tela quando não recebe título. É o padrão certo: quase
+   * todo ícone daqui fica ao lado do texto que já diz a mesma coisa, e
+   * anunciar duas vezes atrapalha. Passe `titulo` só quando o ícone é a
+   * única pista do que aquele controle faz.
+   */
   titulo?: string;
 };
 
-function base(titulo?: string) {
-  return titulo
-    ? ({ role: "img", "aria-label": titulo } as const)
-    : ({ "aria-hidden": true, focusable: false } as const);
-}
-
-export function IconeMenu({ className = "h-5 w-5", titulo }: Props) {
+export function Icone({
+  nome,
+  familia = "solid",
+  className = "",
+  titulo,
+}: PropsIcone & { nome: string; familia?: Familia }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" {...base(titulo)}>
-      <path
-        d="M4 7h16M4 12h16M4 17h16"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
+    <i
+      className={`fa-${familia} fa-${nome} ${className}`.trim()}
+      {...(titulo ? { role: "img", "aria-label": titulo } : { "aria-hidden": true })}
+    />
   );
 }
 
-export function IconeFechar({ className = "h-5 w-5", titulo }: Props) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" {...base(titulo)}>
-      <path
-        d="M6 6l12 12M18 6L6 18"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
+// Os ícones abaixo existem como componente nomeado porque aparecem em mais de
+// um lugar: assim trocar o desenho de um deles é mexer numa linha só. Ícone
+// que aparece uma vez é chamado direto com `<Icone nome="…" />`.
 
-export function IconePlay({ className = "h-5 w-5", titulo }: Props) {
-  return (
-    <svg className={className} viewBox="0 0 20 22" fill="none" {...base(titulo)}>
-      <path d="M19 11L1 21.4V0.6L19 11Z" fill="currentColor" />
-    </svg>
-  );
-}
+export const IconeMenu = ({ className = "text-xl", ...resto }: PropsIcone) => (
+  <Icone nome="bars" className={className} {...resto} />
+);
 
-export function IconeDocumento({ className = "h-6 w-6", titulo }: Props) {
-  return (
-    <svg className={className} viewBox="0 0 46 56" fill="none" {...base(titulo)}>
-      <path
-        d="M3 3h26l14 14v36a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"
-        stroke="currentColor"
-        strokeWidth="2.5"
-      />
-      <path d="M29 3v14h14" stroke="currentColor" strokeWidth="2.5" />
-      <path
-        d="M11 30h24M11 39h24M11 48h16"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
+export const IconeFechar = ({ className = "text-xl", ...resto }: PropsIcone) => (
+  <Icone nome="xmark" className={className} {...resto} />
+);
 
-export function IconeWhatsapp({ className = "h-5 w-5", titulo }: Props) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" {...base(titulo)}>
-      <path
-        d="M3.5 20.5l1.3-4.6a8.2 8.2 0 1 1 3.1 3l-4.4 1.6Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9 8.6c.3-.6.6-.6.9-.6h.6c.2 0 .4 0 .6.5l.7 1.6c.1.2 0 .4-.1.6l-.4.5c-.1.2-.2.3 0 .6a6 6 0 0 0 2.7 2.3c.3.1.5.1.6 0l.6-.7c.2-.2.4-.2.6-.1l1.5.8c.3.1.4.3.4.5 0 .7-.5 1.4-1.1 1.6-.5.2-1.2.3-2.9-.4a9.4 9.4 0 0 1-4.6-4.3c-.4-.9-.4-1.9-.1-2.5Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
+export const IconePlay = ({ className = "text-xl", ...resto }: PropsIcone) => (
+  <Icone nome="play" className={className} {...resto} />
+);
 
-export function IconeInstagram({ className = "h-[18px] w-[18px]", titulo }: Props) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" {...base(titulo)}>
-      <rect
-        x="2.5"
-        y="2.5"
-        width="19"
-        height="19"
-        rx="5.5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <circle cx="12" cy="12" r="4.2" stroke="currentColor" strokeWidth="1.8" />
-      <circle cx="17.6" cy="6.4" r="1.3" fill="currentColor" />
-    </svg>
-  );
-}
+export const IconeDocumento = ({ className = "text-2xl", ...resto }: PropsIcone) => (
+  <Icone nome="file-lines" familia="regular" className={className} {...resto} />
+);
 
-export function IconeLinkedin({ className = "h-[18px] w-[18px]", titulo }: Props) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" {...base(titulo)}>
-      <rect
-        x="2.5"
-        y="2.5"
-        width="19"
-        height="19"
-        rx="3"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <path
-        d="M7 10.5V17M7 7.4v.1M11.5 17v-3.6a2.1 2.1 0 0 1 4.2 0V17"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
+export const IconeCopiar = ({ className = "text-[17px]", ...resto }: PropsIcone) => (
+  <Icone nome="copy" familia="regular" className={className} {...resto} />
+);
 
-export function IconeX({ className = "h-[18px] w-[18px]", titulo }: Props) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" {...base(titulo)}>
-      <rect
-        x="2.5"
-        y="2.5"
-        width="19"
-        height="19"
-        rx="5.5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <path
-        d="M7.2 7.2l9.6 9.6M16.8 7.2l-9.6 9.6"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
+export const IconeWhatsapp = ({ className = "text-xl", ...resto }: PropsIcone) => (
+  <Icone nome="whatsapp" familia="brands" className={className} {...resto} />
+);
 
-export function IconeFacebook({ className = "h-[18px] w-[18px]", titulo }: Props) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" {...base(titulo)}>
-      <rect
-        x="2.5"
-        y="2.5"
-        width="19"
-        height="19"
-        rx="5.5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <path
-        d="M14 8.5h-1.6c-.6 0-1.1.5-1.1 1.1V11h2.6l-.4 2.4h-2.2V19h-2.5v-5.6H7.4V11h1.4V9.3c0-1.7 1.2-3 3-3H14v2.2Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
+export const IconeInstagram = ({ className = "text-[18px]", ...resto }: PropsIcone) => (
+  <Icone nome="instagram" familia="brands" className={className} {...resto} />
+);
 
-export function IconeCopiar({ className = "h-[18px] w-[18px]", titulo }: Props) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" {...base(titulo)}>
-      <rect
-        x="8.5"
-        y="8.5"
-        width="12"
-        height="12"
-        rx="2.2"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <path
-        d="M15.5 8.5V6.7a2.2 2.2 0 0 0-2.2-2.2H5.7a2.2 2.2 0 0 0-2.2 2.2v7.6a2.2 2.2 0 0 0 2.2 2.2h1.8"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-    </svg>
-  );
-}
+export const IconeLinkedin = ({ className = "text-[18px]", ...resto }: PropsIcone) => (
+  <Icone nome="linkedin-in" familia="brands" className={className} {...resto} />
+);
+
+export const IconeX = ({ className = "text-[17px]", ...resto }: PropsIcone) => (
+  <Icone nome="x-twitter" familia="brands" className={className} {...resto} />
+);
+
+export const IconeFacebook = ({ className = "text-[18px]", ...resto }: PropsIcone) => (
+  <Icone nome="facebook-f" familia="brands" className={className} {...resto} />
+);

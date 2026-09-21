@@ -21,6 +21,14 @@ export type Perfil = {
   formacao: string;
   abordagem: string;
   tempoResposta: string;
+  /** Duração de uma sessão, por extenso. Ex.: "50 minutos". */
+  duracaoSessao: string;
+  /** Ritmo dos encontros. Ex.: "Semanal". */
+  frequencia: string;
+  /** Quanto custa, escrito do jeito que vai aparecer na página. */
+  valorSessao: string;
+  /** Onde acontece: endereço do consultório, plataforma do online, ou os dois. */
+  onde: string;
   whatsapp: string;
   mensagemWhatsapp: string;
   instagram: string;

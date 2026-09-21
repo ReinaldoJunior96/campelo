@@ -166,7 +166,7 @@ export default function Nav() {
             onClick={() => setAberto(false)}
             className="mt-auto flex items-center justify-center gap-2 rounded-full bg-barro px-6 py-4 text-sm font-bold text-areia"
           >
-            <IconeWhatsapp className="h-5 w-5" />
+            <IconeWhatsapp className="text-xl" />
             Agendar conversa
           </a>
         </div>

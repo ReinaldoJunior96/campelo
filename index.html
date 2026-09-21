@@ -48,6 +48,23 @@
       rel="stylesheet"
     />
 
+    <!-- Font Awesome. So CSS: o icone e um caractere de webfont no ::before,
+         entao nada e injetado no DOM e nada quebra quando o React remonta um
+         trecho da arvore (que foi o motivo de o Lucide ter saido daqui).
+         O integrity trava o arquivo: se o CDN devolver outro conteudo, o
+         navegador recusa em vez de executar. Mexeu na versao, gere o hash
+         novo em https://cdnjs.com/libraries/font-awesome.
+         O host tambem precisa estar liberado no Content-Security-Policy
+         do Caddyfile, em style-src e font-src. -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css"
+      integrity="sha512-QeR2VH+lsBE5LSAe1Q5EnTBbe7XTBubt8dG93Y7gidSgdMCr8nVqKcfKAMyN96SV8KDbZVTDXChatu5G2KQGzg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
     <!-- TODO: assim que a cidade, o endereço e as redes estiverem definidos,
          acrescentar "address", "areaServed" e "sameAs" aqui. Só entram dados
          confirmados: informação errada em JSON-LD atrapalha mais do que ajuda. -->

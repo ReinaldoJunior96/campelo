@@ -1,3 +1,4 @@
+import { Icone } from "./Icones";
 import Pendente from "./Pendente";
 import Revelar from "./Revelar";
 import { useConteudo } from "../lib/conteudo";
@@ -6,9 +7,9 @@ export default function Sobre() {
   const { sobre, perfil } = useConteudo();
 
   const credenciais = [
-    { rotulo: "Formação", valor: perfil.formacao },
-    { rotulo: "Abordagem", valor: perfil.abordagem },
-    { rotulo: "Registro", valor: perfil.crp },
+    { icone: "graduation-cap", rotulo: "Formação", valor: perfil.formacao },
+    { icone: "compass", rotulo: "Abordagem", valor: perfil.abordagem },
+    { icone: "id-badge", rotulo: "Registro", valor: perfil.crp },
   ];
 
   return (
@@ -43,7 +44,8 @@ export default function Sobre() {
         <dl className="mt-3 flex flex-wrap gap-x-10 gap-y-4 border-t border-tinta/15 pt-5">
           {credenciais.map((credencial) => (
             <div key={credencial.rotulo} className="flex flex-col gap-1">
-              <dt className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-tinta/55">
+              <dt className="flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.12em] text-tinta/55">
+                <Icone nome={credencial.icone} className="text-[13px] text-mare" />
                 {credencial.rotulo}
               </dt>
               <dd className="m-0 text-[15px] font-bold">

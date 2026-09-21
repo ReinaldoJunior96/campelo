@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { AreaTexto, Bloco, Botao, Campo, ListaEditavel, Selecao } from "./campos";
 import SeletorImagem from "./SeletorImagem";
 import { api, type Midia } from "../lib/api";
-import { conteudoPadrao } from "../conteudoPadrao";
+import { conteudoPadrao, mesclarPadrao } from "../conteudoPadrao";
 import type { Conteudo, TipoConteudo } from "../tipos";
 import type { PostAdmin } from "../tiposBlog";
 
@@ -72,8 +72,10 @@ export default function Painel({
       .then(([respostaConteudo, respostaMidia, respostaPosts]) => {
         // Sem nada salvo ainda, o painel abre com o conteúdo padrão do site,
         // que é exatamente o que está no ar. Assim a primeira edição parte do
-        // que a pessoa vê, e não de formulários em branco.
-        if (respostaConteudo.dados) setConteudo(respostaConteudo.dados);
+        // que a pessoa vê, e não de formulários em branco. A mescla cobre o
+        // outro caso: gravação feita antes de um campo existir abriria esse
+        // campo como input sem valor, e o salvamento voltaria 400.
+        if (respostaConteudo.dados) setConteudo(mesclarPadrao(respostaConteudo.dados));
         setMidia(respostaMidia.itens);
         setPosts(respostaPosts.itens);
       })
@@ -219,8 +221,44 @@ export default function Painel({
                 <Campo rotulo="CRP" valor={conteudo.perfil.crp} aoMudar={(v) => definir("perfil", { crp: v })} />
                 <Campo rotulo="Cidade e estado" valor={conteudo.perfil.cidade} aoMudar={(v) => definir("perfil", { cidade: v })} dica="Ex.: São Luís, MA" />
                 <Campo rotulo="Modalidade" valor={conteudo.perfil.modalidade} aoMudar={(v) => definir("perfil", { modalidade: v })} dica="Ex.: Online e presencial" />
-                <Campo rotulo="Formação" valor={conteudo.perfil.formacao} aoMudar={(v) => definir("perfil", { formacao: v })} />
-                <Campo rotulo="Abordagem" valor={conteudo.perfil.abordagem} aoMudar={(v) => definir("perfil", { abordagem: v })} />
+                <Campo rotulo="Formação" valor={conteudo.perfil.formacao} aoMudar={(v) => definir("perfil", { formacao: v })} dica="Ex.: Psicologia, com pós em clínica" />
+                <Campo rotulo="Abordagem" valor={conteudo.perfil.abordagem} aoMudar={(v) => definir("perfil", { abordagem: v })} dica="Ex.: Psicanálise" />
+              </Bloco>
+
+              <Bloco
+                titulo="Atendimento"
+                descricao="Aparecem na faixa de detalhes, logo abaixo do passo a passo. Os valores que já estão aqui são exemplos: confirme cada um antes de divulgar o site."
+              >
+                <Campo
+                  rotulo="Duração da sessão"
+                  valor={conteudo.perfil.duracaoSessao}
+                  aoMudar={(v) => definir("perfil", { duracaoSessao: v })}
+                  dica="Ex.: 50 minutos"
+                />
+                <Campo
+                  rotulo="Frequência"
+                  valor={conteudo.perfil.frequencia}
+                  aoMudar={(v) => definir("perfil", { frequencia: v })}
+                  dica="Ex.: Semanal"
+                />
+                <Campo
+                  rotulo="Valor"
+                  valor={conteudo.perfil.valorSessao}
+                  aoMudar={(v) => definir("perfil", { valorSessao: v })}
+                  dica="Escreva do jeito que deve aparecer. Ex.: R$ 120 por sessão"
+                />
+                <Campo
+                  rotulo="Onde acontece"
+                  valor={conteudo.perfil.onde}
+                  aoMudar={(v) => definir("perfil", { onde: v })}
+                  dica="Endereço do consultório, plataforma do online, ou os dois."
+                />
+
+                <p className="rounded-lg bg-espuma/40 px-4 py-3 text-sm text-tinta/75">
+                  Duração, frequência e valor também estão escritos por extenso nas{" "}
+                  <strong className="font-bold">Perguntas frequentes</strong>. Se mudar algum aqui,
+                  passe lá para acertar o texto também.
+                </p>
               </Bloco>
 
               <Bloco titulo="Contato" descricao="Como as pessoas chegam até você.">

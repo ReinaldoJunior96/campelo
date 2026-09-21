@@ -20,11 +20,19 @@ export const conteudoPadrao: Conteudo = {
     nome: "Campelo",
     profissao: "Psicólogo",
     crp: "CRP 22/07472",
-    cidade: "[CIDADE/UF]",
-    modalidade: "[ONLINE E PRESENCIAL]",
-    formacao: "[GRADUAÇÃO E PÓS]",
-    abordagem: "[ABORDAGEM]",
-    tempoResposta: "[X]",
+    // Daqui até `onde`: valores de exemplo, plausíveis mas não confirmados,
+    // que existem para a página nunca ir ao ar com buraco à mostra. Todos
+    // têm campo próprio no painel (aba "Perfil e contato", blocos "Seus
+    // dados" e "Atendimento"), e lá aparecem marcados como exemplo.
+    cidade: "São Luís, MA",
+    modalidade: "Online e presencial",
+    formacao: "Psicologia, com pós em clínica",
+    abordagem: "Psicanálise",
+    tempoResposta: "24",
+    duracaoSessao: "50 minutos",
+    frequencia: "Semanal",
+    valorSessao: "R$ 120 por sessão",
+    onde: "Online por chamada de vídeo e presencial em São Luís",
     whatsapp: "559882126848",
     mensagemWhatsapp:
       "Oi, Campelo! Cheguei pelo site e queria saber mais sobre os atendimentos.",
@@ -96,12 +104,12 @@ export const conteudoPadrao: Conteudo = {
       {
         titulo: "A gente combina o horário",
         texto:
-          "Atendimento [ONLINE E PRESENCIAL], em [CIDADE/UF]. Sessões de [50 MINUTOS], [FREQUÊNCIA].",
+          "Acertamos dia e hora pelo WhatsApp mesmo, no que couber na sua rotina. Duração, frequência e valor estão logo abaixo.",
       },
       {
         titulo: "A primeira conversa",
         texto:
-          "Um encontro para nos conhecermos e entender o que te traz aqui. Valor: [VALOR DA SESSÃO].",
+          "Um encontro para nos conhecermos e entender o que te traz aqui. Sem compromisso de continuar depois dele.",
       },
     ],
   },
@@ -152,16 +160,18 @@ export const conteudoPadrao: Conteudo = {
       },
       {
         pergunta: "O atendimento é online ou presencial?",
-        resposta: "[ONLINE E PRESENCIAL], em [CIDADE/UF]. [DETALHAR ENDEREÇO OU PLATAFORMA]",
+        resposta:
+          "Os dois. Online por chamada de vídeo, de onde você estiver, e presencial em São Luís. Você escolhe o que funciona melhor para a sua rotina.",
       },
       {
         pergunta: "Quanto dura e com que frequência?",
         resposta:
-          "Sessões de [50 MINUTOS], normalmente [FREQUÊNCIA]. O ritmo é combinado entre nós dois.",
+          "Sessões de 50 minutos, normalmente uma por semana. O ritmo é combinado entre nós dois e pode mudar ao longo do processo.",
       },
       {
         pergunta: "Qual o valor da sessão?",
-        resposta: "[VALOR DA SESSÃO]. [POLÍTICA DE VALOR SOCIAL OU CONVÊNIO, SE HOUVER]",
+        resposta:
+          "R$ 120 por sessão. Se o valor for um impedimento para você, me conte na primeira mensagem: dá para conversar.",
       },
       {
         pergunta: "Preciso ser uma pessoa negra para me atender?",
@@ -182,6 +192,36 @@ export const conteudoPadrao: Conteudo = {
     frase: "Cuidar de si também é um ato de dignidade.",
   },
 };
+
+/**
+ * Completa o que veio da API com o padrão do bundle.
+ *
+ * O banco guarda o documento inteiro do jeito que foi salvo naquele dia.
+ * Quando um campo novo nasce aqui — foi o caso de duração, frequência,
+ * valor e onde —, a gravação antiga não tem esse campo. Sem completar, a
+ * página renderiza `undefined`, o painel abre um input sem valor (que o
+ * React reclama em console) e o salvamento volta 400, porque o esquema do
+ * servidor exige o campo que o formulário nunca chegou a ter.
+ *
+ * A mescla é rasa, seção por seção, de propósito. As listas (parágrafos,
+ * caminhos, passos, conteúdos, perguntas) vêm inteiras do que foi salvo:
+ * mesclar item a item ressuscitaria o que o Campelo apagou de propósito.
+ */
+export function mesclarPadrao(dados: Partial<Conteudo> | null | undefined): Conteudo {
+  if (!dados) return conteudoPadrao;
+
+  return {
+    perfil: { ...conteudoPadrao.perfil, ...dados.perfil },
+    hero: { ...conteudoPadrao.hero, ...dados.hero },
+    sobre: { ...conteudoPadrao.sobre, ...dados.sobre },
+    caminhos: { ...conteudoPadrao.caminhos, ...dados.caminhos },
+    comoFunciona: { ...conteudoPadrao.comoFunciona, ...dados.comoFunciona },
+    conteudos: { ...conteudoPadrao.conteudos, ...dados.conteudos },
+    faq: { ...conteudoPadrao.faq, ...dados.faq },
+    chamada: { ...conteudoPadrao.chamada, ...dados.chamada },
+    rodape: { ...conteudoPadrao.rodape, ...dados.rodape },
+  };
+}
 
 // Âncoras levam a barra na frente (`/#sobre`, não `#sobre`) para funcionar
 // também a partir de `/blog`, não só da home.

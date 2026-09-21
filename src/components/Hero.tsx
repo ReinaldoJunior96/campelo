@@ -1,3 +1,4 @@
+import { Icone } from "./Icones";
 import Pendente from "./Pendente";
 import Revelar from "./Revelar";
 import { useConteudo } from "../lib/conteudo";
@@ -38,13 +39,22 @@ export default function Hero() {
           </a>
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-1 font-mono text-xs uppercase tracking-[0.1em] text-tinta/60">
-          <span>{perfil.crp}</span>
-          <span aria-hidden="true" className="h-1 w-1 rounded-full bg-tinta/30" />
-          <span>
-            <Pendente texto={perfil.modalidade} />
-          </span>
-        </div>
+        {/* Os três qualificadores que a pessoa procura antes de mandar a
+            primeira mensagem: registro, como atende e onde fica. O ícone
+            substitui o ponto separador que havia aqui: mesma função de
+            quebrar a linha em blocos, e ainda diz do que se trata. */}
+        <ul className="flex list-none flex-wrap items-center gap-x-6 gap-y-2.5 p-0 pt-1 font-mono text-xs uppercase tracking-[0.1em] text-tinta/60">
+          {[
+            { icone: "id-badge", texto: perfil.crp },
+            { icone: "house-laptop", texto: perfil.modalidade },
+            { icone: "location-dot", texto: perfil.cidade },
+          ].map((item) => (
+            <li key={item.icone} className="flex items-center gap-2">
+              <Icone nome={item.icone} className="text-[13px] text-mare" />
+              <Pendente texto={item.texto} />
+            </li>
+          ))}
+        </ul>
       </Revelar>
 
       <Revelar atraso={120} className="relative mx-auto w-full max-w-[430px]">

@@ -1,4 +1,4 @@
-import { IconeWhatsapp } from "./Icones";
+import { Icone, IconeWhatsapp } from "./Icones";
 import Pendente from "./Pendente";
 import Revelar from "./Revelar";
 import { useConteudo } from "../lib/conteudo";
@@ -38,11 +38,12 @@ export default function Chamada() {
           rel="noreferrer noopener"
           className="flex items-center gap-2.5 rounded-full bg-espuma px-9 py-4 text-base font-bold text-tinta transition-transform duration-300 ease-mare hover:scale-[1.03]"
         >
-          <IconeWhatsapp className="h-5 w-5" />
+          <IconeWhatsapp className="text-xl" />
           {chamada.cta}
         </a>
 
-        <span className="font-mono text-xs uppercase tracking-[0.12em] text-areia/70">
+        <span className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-areia/70">
+          <Icone nome="clock" familia="regular" className="text-[13px]" />
           Resposta em até <Pendente texto={perfil.tempoResposta} /> horas
         </span>
       </Revelar>

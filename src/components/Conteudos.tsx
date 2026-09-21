@@ -1,7 +1,14 @@
-import { IconeDocumento, IconePlay } from "./Icones";
+import { Icone, IconeDocumento, IconePlay } from "./Icones";
 import Revelar from "./Revelar";
 import { useConteudo } from "../lib/conteudo";
-import type { ItemConteudo } from "../tipos";
+import type { ItemConteudo, TipoConteudo } from "../tipos";
+
+/** Some junto da etiqueta, para o tipo do material ser lido de relance. */
+const iconePorTipo: Record<TipoConteudo, string> = {
+  video: "circle-play",
+  artigo: "file-lines",
+  pdf: "file-pdf",
+};
 
 /**
  * O vídeo do YouTube entra como capa clicável em vez de iframe.
@@ -31,7 +38,7 @@ function Capa({ item }: { item: ItemConteudo }) {
     return (
       <div className="flex h-48 items-center justify-center bg-tinta">
         <span className="flex h-[58px] w-[58px] items-center justify-center rounded-full bg-espuma text-tinta">
-          <IconePlay className="ml-1 h-5 w-[18px]" />
+          <IconePlay className="ml-0.5 text-xl" />
         </span>
       </div>
     );
@@ -55,7 +62,7 @@ function Capa({ item }: { item: ItemConteudo }) {
 
   return (
     <div className="flex h-48 items-center justify-center bg-mare text-areia">
-      <IconeDocumento className="h-14 w-auto" />
+      <IconeDocumento className="text-[52px]" />
     </div>
   );
 }
@@ -91,7 +98,8 @@ export default function Conteudos() {
                 <article className="flex h-full flex-col overflow-hidden rounded-cartao bg-areia">
                   <Capa item={item} />
                   <div className="flex flex-grow flex-col gap-2.5 p-7">
-                    <span className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-barro">
+                    <span className="flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.12em] text-barro">
+                      <Icone nome={iconePorTipo[item.tipo]} className="text-[12px]" />
                       {item.categoria}
                     </span>
                     <h3 className="text-[19px] font-semibold tracking-tight">{item.titulo}</h3>

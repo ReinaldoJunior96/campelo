@@ -1,4 +1,4 @@
-import { IconeInstagram, IconeLinkedin } from "./Icones";
+import { Icone, IconeInstagram, IconeLinkedin } from "./Icones";
 import Pendente from "./Pendente";
 import { useConteudo } from "../lib/conteudo";
 import { pendente } from "../tipos";
@@ -25,8 +25,12 @@ export default function Rodape() {
             loading="lazy"
             decoding="async"
           />
-          <span className="font-mono text-[11.5px] uppercase tracking-[0.1em] text-areia/75">
-            {perfil.profissao} · {perfil.crp} · <Pendente texto={perfil.cidade} />
+          <span className="flex flex-wrap items-center justify-center gap-x-2 font-mono text-[11.5px] uppercase tracking-[0.1em] text-areia/75 md:justify-start">
+            {perfil.profissao} · {perfil.crp}
+            <span className="flex items-center gap-1.5">
+              <Icone nome="location-dot" className="text-[12px] text-espuma" />
+              <Pendente texto={perfil.cidade} />
+            </span>
           </span>
         </div>
 
