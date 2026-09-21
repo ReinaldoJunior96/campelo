@@ -1,0 +1,41 @@
+# Site atrás de um proxy que já existe na VPS, em vez do Caddy próprio.
+#
+#   docker compose -f docker-compose.prod.yml -f docker-compose.proxy-externo.yml up -d --build
+#
+# Para quando a máquina já roda outra aplicação com nginx (ou Traefik, ou
+# outro Caddy) segurando 80/443 e cuidando dos certificados. Dois proxies
+# disputando a porta 80 não é problema para resolver, é problema para
+# evitar: quem termina TLS passa a ser o proxy que já está lá, e o Caddy
+# deste projeto sai de cena.
+#
+# Diferente do docker-compose.ip.yml, aqui NÃO se publica porta no host. O
+# proxy alcança o site pela rede interna do Docker, então o container não
+# fica exposto direto na internet driblando o TLS.
+#
+# Ajuste REDE_PROXY para a rede do proxy (descubra com
+# `docker inspect <container-do-proxy> --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}'`).
+# No proxy, o site atende pelo nome `campelo-web`.
+
+services:
+  caddy:
+    # Profile que nunca é ativado: o serviço deixa de subir sem precisar
+    # apagar nada do arquivo de produção.
+    profiles: ["nao-usar"]
+
+  web:
+    networks:
+      # A rede do próprio projeto continua: é por ela que o site fala com a
+      # API. Tirar daqui deixaria o /api/ sem rota.
+      default:
+      proxy:
+        aliases:
+          # Alias explícito de propósito. O nome do serviço (`web`) também
+          # vira alias, e `web` numa rede compartilhada é genérico demais:
+          # no dia em que a outra aplicação tiver um serviço com esse nome,
+          # um dos dois passa a responder pelo outro sem nenhum aviso.
+          - campelo-web
+
+networks:
+  proxy:
+    external: true
+    name: ${REDE_PROXY:-atendeai_default}

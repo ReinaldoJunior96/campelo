@@ -79,9 +79,109 @@ próprio site está na frente da API, não mais Caddy e nginx.
 
 Isto serve **HTTP puro**: a senha do painel e o cookie de sessão trafegam
 em texto claro. Serve para testar, não para deixar no ar com a senha
-definitiva. Quando o domínio existir, volte a usar só o
-`docker-compose.prod.yml` (ou ponha o site atrás do proxy que já atende os
-outros) e troque a senha.
+definitiva. Quando o domínio existir, use a seção abaixo e troque a senha.
+
+### Site atrás do proxy que já existe (com HTTPS)
+
+O jeito definitivo quando a VPS já tem nginx/Traefik cuidando de 80/443 e
+dos certificados. O Caddy deste projeto sai de cena, o site entra na rede
+do proxy e é alcançado pelo nome `campelo-web`. Nenhuma porta é publicada
+no host: só o proxy fala com o site.
+
+```bash
+REDE_PROXY=atendeai_default \
+  docker compose -f docker-compose.prod.yml -f docker-compose.proxy-externo.yml up -d --build
+```
+
+Descubra a rede do proxy com:
+
+```bash
+docker inspect <container-do-proxy> \
+  --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}'
+```
+
+No `.env`, o oposto do modo por IP:
+
+```env
+COOKIE_SEGURO=true
+TRUST_PROXY=2
+```
+
+`TRUST_PROXY=2` porque voltam a ser dois proxies na frente da API: o do
+host e o nginx do próprio site.
+
+**Certificado primeiro, bloco depois.** O certbot valida pela porta 80, e
+enquanto o domínio não tiver bloco próprio ele cai no `default_server` do
+proxy — que é justamente por onde o desafio passa:
+
+```bash
+certbot certonly --webroot -w <webroot-do-default_server> -d campelopsi.com.br
+```
+
+Só então acrescente ao proxy (exemplo para nginx; **não altere os blocos
+que já existem**, acrescente estes ao lado):
+
+```nginx
+server {
+    listen 80;
+    server_name campelopsi.com.br;
+
+    # Renovação. Sem isto o redirect abaixo engole o desafio e a renovação
+    # falha em silêncio daqui a 60 dias.
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/html/public;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name campelopsi.com.br;
+    resolver 127.0.0.11 ipv6=off valid=30s;
+
+    ssl_certificate     /etc/letsencrypt/live/campelopsi.com.br/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/campelopsi.com.br/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    add_header Strict-Transport-Security "max-age=63072000" always;
+
+    # Upload de imagem pelo painel. O limite real (8 MB) é do servidor; este
+    # precisa ser maior, senão o corte acontece aqui e a resposta vira um
+    # 413 em HTML que o painel não sabe ler.
+    client_max_body_size 12m;
+
+    location / {
+        # O upstream vai numa variável DE PROPÓSITO. Com o nome direto em
+        # proxy_pass, o nginx resolve no boot e se recusa a subir quando o
+        # container do site estiver fora — derrubando junto tudo o que esse
+        # proxy atende. Com a variável, ele sobe normal e devolve 502
+        # apenas neste domínio.
+        set $campelo_upstream campelo-web:80;
+
+        proxy_pass http://$campelo_upstream;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+Os cabeçalhos de segurança e a CSP não entram aqui: vêm do `nginx.conf` do
+próprio site, para valerem em qualquer um dos três modos. `add_header`
+repetido não soma, e uma CSP divergente derruba a fonte dos ícones sem
+deixar erro na página.
+
+Aplique com `nginx -s reload` (não derruba conexão), nunca com restart:
+
+```bash
+docker exec <container-do-proxy> nginx -t && \
+docker exec <container-do-proxy> nginx -s reload
+```
 
 ## O painel
 
