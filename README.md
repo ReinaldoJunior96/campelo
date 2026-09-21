@@ -115,16 +115,22 @@ enquanto o domínio não tiver bloco próprio ele cai no `default_server` do
 proxy — que é justamente por onde o desafio passa:
 
 ```bash
-certbot certonly --webroot -w <webroot-do-default_server> -d campelopsi.com.br
+certbot certonly --webroot -w <webroot-do-default_server> \
+  -d campelopsi.com.br -d www.campelopsi.com.br
 ```
+
+O `www` precisa de registro A próprio no DNS **antes** disso: o Let's
+Encrypt valida cada nome da lista, e um nome que não resolve reprova o
+pedido inteiro. Incluir o `www` depois obriga a reemitir.
 
 Só então acrescente ao proxy (exemplo para nginx; **não altere os blocos
 que já existem**, acrescente estes ao lado):
 
 ```nginx
+# HTTP: desafio do certbot e redirect para o domínio canônico.
 server {
     listen 80;
-    server_name campelopsi.com.br;
+    server_name campelopsi.com.br www.campelopsi.com.br;
 
     # Renovação. Sem isto o redirect abaixo engole o desafio e a renovação
     # falha em silêncio daqui a 60 dias.
@@ -132,11 +138,29 @@ server {
         root /var/www/html/public;
     }
 
+    # Destino fixo, não $host: manda o www direto para o domínio limpo num
+    # salto só, em vez de https://www -> https://limpo.
     location / {
-        return 301 https://$host$request_uri;
+        return 301 https://campelopsi.com.br$request_uri;
     }
 }
 
+# HTTPS no www: só redireciona. Precisa existir mesmo sendo trivial —
+# o navegador completa o handshake TLS ANTES de ver qualquer redirect, e
+# sem este bloco quem digitar https://www toma aviso de site inseguro.
+# Por isso o www também tem que estar no certificado.
+server {
+    listen 443 ssl;
+    server_name www.campelopsi.com.br;
+
+    ssl_certificate     /etc/letsencrypt/live/campelopsi.com.br/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/campelopsi.com.br/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    return 301 https://campelopsi.com.br$request_uri;
+}
+
+# HTTPS no domínio canônico: aqui mora o site.
 server {
     listen 443 ssl;
     server_name campelopsi.com.br;
